@@ -46,6 +46,27 @@ The three holder rows are the reverse guard. The literals above them test that a
 these test that a variable actually holding the value still gets tagged too. A prompt change that
 over-corrects toward names could drop them.
 
+## api/employee_sync.py — scanner temporaries (PROD-274)
+
+These three functions index or dot into the result of a call. The scanner lowers that into a
+temporary, so the variable it surfaces has a name that appears nowhere in the source — `tmp7["email"]`
+rather than anything you can grep for. Rule 3b covers it: use the line number, judge the field name
+after the temporary, ignore the temporary itself.
+
+| Variable | Expected tag | Rule |
+|---|---|---|
+| the `"email"` access in `resolve_contact_email` | ContactData.EmailAddress | 3b then 3a |
+| the `dateOfBirth` access in `resolve_birth_date` | PersonalIdentification.DateofBirth | 3b then 3a |
+| the `"costCentre"` access in `resolve_cost_centre` | None | 4 — generic attribute |
+| `client`, `staff_id` | None | 3 |
+
+The scanner names these rows itself, so match on the field name rather than the exact variable
+string. `"costCentre"` is the negative control: Rule 3b must not turn every temporary into a tag.
+
+A row here returning `None` with reasoning that the name does not appear in the code is the
+PROD-274 failure, not a correct answer.
+
+
 ## src/main/java/com/acme/ledger/LedgerColumns.java — constants
 
 The two `"email_address"` constants hold the same string and must get opposite answers.

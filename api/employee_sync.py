@@ -13,3 +13,15 @@ def build_directory_entry(staff_response):
     entry = {"name": full_name, "contact": contact, "home": home}
     log.info("directory entry built for department %s", dept)
     return entry, org
+
+
+def resolve_contact_email(client, staff_id):
+    return client.fetch_profile(staff_id)["email"]
+
+
+def resolve_birth_date(client, staff_id):
+    return client.fetch_profile(staff_id).dateOfBirth
+
+
+def resolve_cost_centre(client, staff_id):
+    return client.fetch_profile(staff_id)["costCentre"]
