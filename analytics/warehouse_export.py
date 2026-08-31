@@ -1,4 +1,5 @@
 import logging
+import re
 from pyspark.sql import SparkSession
 
 log = logging.getLogger(__name__)
@@ -6,6 +7,8 @@ log = logging.getLogger(__name__)
 WAREHOUSE_JAR_PATH = "hdfs:///opt/lib/masking.jar"
 MASK_CLASS = "com.acme.udf.MaskColumn"
 RETRY_LIMIT = 3
+ROW_FMT = "%s | %s"
+PHONE_RE = r"^\d{3}-\d{4}$"
 
 
 def build_session(app_name):
@@ -15,6 +18,14 @@ def build_session(app_name):
         .enableHiveSupport()
         .getOrCreate()
     )
+
+
+def format_row(left, right):
+    return ROW_FMT % (left, right)
+
+
+def looks_like_phone(raw):
+    return re.match(PHONE_RE, raw) is not None
 
 
 def generate_select_sql(table_name, columns):

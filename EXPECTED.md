@@ -19,7 +19,13 @@ that looked like a fixture would score `None` everywhere and prove nothing.
 | `"member_profile"` | None | 3a — table name, names no field |
 | `"Sending export summary to member"` | None | 3a — prose |
 | `columns`, `column`, `column_lower`, `select_items`, `sensitive_columns`, `table_name` | None | 3a — carriers |
+| `ROW_FMT` (`"%s \| %s"`) | None | 3 — format pattern, holds no data |
+| `PHONE_RE` (`r"^\d{3}-\d{4}$"`) | None | 3 — regex pattern, holds no data |
 | `spark`, `app_name`, `encryption_key`, `WAREHOUSE_JAR_PATH`, `MASK_CLASS`, `RETRY_LIMIT`, `attempt`, `err` | None | 3 |
+
+`ROW_FMT` and `PHONE_RE` are the guard on Rule 3's format-string clause. That clause was narrowed so it
+stops covering a field name inside an f-string. These two rows prove the narrowing did not also stop it
+covering a real pattern. If either comes back tagged, the narrowing went too far.
 
 ## api/employee_sync.py — dict keys (PROD-276 case 1)
 
@@ -31,6 +37,14 @@ that looked like a fixture would score `None` everywhere and prove nothing.
 | `'home_address'` | ContactData.Address | 3a |
 | `'departmentCode'` | None | 4 — generic attribute |
 | `'companyId'` | None | 3 — organisation identifier |
+| `full_name` | PersonalIdentification.FullName | 1 — holds the joined name at runtime |
+| `contact` | ContactData.PhoneNumber | 1 — holds the mobile value |
+| `home` | ContactData.Address | 1 — holds the address value |
+| `dept`, `org`, `entry` | None | 4 / 3 |
+
+The three holder rows are the reverse guard. The literals above them test that a *name* gets tagged;
+these test that a variable actually holding the value still gets tagged too. A prompt change that
+over-corrects toward names could drop them.
 
 ## src/main/java/com/acme/ledger/LedgerColumns.java — constants
 
