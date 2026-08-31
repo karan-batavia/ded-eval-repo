@@ -61,11 +61,26 @@ after the temporary, ignore the temporary itself.
 | `client`, `staff_id` | None | 3 |
 
 The scanner names these rows itself, so match on the field name rather than the exact variable
-string. `"costCentre"` is the negative control: Rule 3b must not turn every temporary into a tag.
+string. A scan of this repo has not yet produced a `tmp` name for these lines, so these rows are
+unverified — treat them as pending until a run surfaces one. `"costCentre"` is the negative control: Rule 3b must not turn every temporary into a tag.
 
 A row here returning `None` with reasoning that the name does not appear in the code is the
 PROD-274 failure, not a correct answer.
 
+
+## api/employee_sync.py — dict built then keyed
+
+`collect_contact` builds a dict from runtime rows, then reads it by key. The dict holds no hardcoded
+values, so Rule 3's fixture clause has nothing to grab.
+
+| Variable | Expected tag | Rule |
+|---|---|---|
+| `"email"` | ContactData.EmailAddress | 3a |
+| `"phone_number"` | ContactData.PhoneNumber | 3a |
+| `"ledgerRef"` | None | 4 — generic attribute |
+| `email` | ContactData.EmailAddress | 1 — holds the value |
+| `phone` | ContactData.PhoneNumber | 1 — holds the value |
+| `ledger_ref`, `profile`, `raw_rows` | None | 3 / 4 |
 
 ## src/main/java/com/acme/ledger/LedgerColumns.java — constants
 

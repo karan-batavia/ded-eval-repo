@@ -25,3 +25,11 @@ def resolve_birth_date(client, staff_id):
 
 def resolve_cost_centre(client, staff_id):
     return client.fetch_profile(staff_id)["costCentre"]
+
+
+def collect_contact(raw_rows):
+    profile = dict(raw_rows)
+    email = profile.get("email")
+    phone = profile.get("phone_number")
+    ledger_ref = profile.get("ledgerRef")
+    return email, phone, ledger_ref
